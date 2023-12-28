@@ -1,5 +1,9 @@
 import React from 'react';
 
+function Fallback({ error }) {
+  return <div>Something went wrong.</div>;
+}
+
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -7,11 +11,11 @@ export class ErrorBoundary extends React.Component {
   }
 
   static defaultProps = {
-    fallback: <div>Something went wrong.</div>,
+    fallback: Fallback,
   };
 
   static getDerivedStateFromError(error) {
-    return { hasError: true };
+    return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
@@ -20,7 +24,9 @@ export class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback;
+      const { fallback: Fallback } = this.props;
+      const { error } = this.state;
+      return <Fallback error={error} />;
     }
 
     return this.props.children;
