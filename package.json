@@ -1,4 +1,6 @@
 {
+  "name": "react-suspense",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build"
