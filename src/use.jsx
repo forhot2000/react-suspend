@@ -1,19 +1,21 @@
+import { FULFILLED, REJECTED, PENDING } from './promise';
+
 export function use(promise) {
-  if (promise.status === 'fulfilled') {
+  if (promise.status === FULFILLED) {
     return promise.value;
-  } else if (promise.status === 'rejected') {
+  } else if (promise.status === REJECTED) {
     throw promise.reason;
-  } else if (promise.status === 'pending') {
+  } else if (promise.status === PENDING) {
     throw promise;
   } else {
-    promise.status = 'pending';
+    promise.status = PENDING;
     promise.then(
       (result) => {
-        promise.status = 'fulfilled';
+        promise.status = FULFILLED;
         promise.value = result;
       },
       (reason) => {
-        promise.status = 'rejected';
+        promise.status = REJECTED;
         promise.reason = reason;
       }
     );

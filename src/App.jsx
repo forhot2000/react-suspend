@@ -1,6 +1,6 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { ErrorBoundary } from './ErrorBoundary';
-import { fetchData } from './fetchData';
+import { wrappedFetchData, useFetchData } from './fetchData';
 
 export function App() {
   return (
@@ -33,7 +33,13 @@ export function App() {
 
       <ErrorBoundary>
         <Suspense fallback={<div>loading...</div>}>
-          <Bar />
+          <Bar url='/bar/1'>
+            <ErrorBoundary>
+              <Suspense fallback={<div>loading...</div>}>
+                <Bar url='/bar/1-1' />
+              </Suspense>
+            </ErrorBoundary>
+          </Bar>
         </Suspense>
       </ErrorBoundary>
     </div>
@@ -41,7 +47,7 @@ export function App() {
 }
 
 function Foo({ url, children }) {
-  const data = fetchData(url);
+  const data = wrappedFetchData(url);
   return (
     <div>
       <div>{data}</div>
@@ -50,13 +56,24 @@ function Foo({ url, children }) {
   );
 }
 
-function Bar() {
-  const throwAsyncError = useThrowAsyncError();
-  useEffect(() => {
-    const promise = delayReject(new Error('xxx'), 1000);
-    promise.catch(throwAsyncError);
-  }, []);
-  return <div>bar</div>;
+function Bar({ url, children }) {
+  const { data, init } = useFetchData(url);
+
+  if (init) {
+    // wait for useEffect
+    return null;
+  }
+
+  if (!data) {
+    return <div>empty data</div>;
+  }
+
+  return (
+    <div>
+      <div>{data}</div>
+      <div style={{ marginLeft: 20 }}>{children}</div>
+    </div>
+  );
 }
 
 const useThrowAsyncError = () => {
@@ -68,6 +85,10 @@ const useThrowAsyncError = () => {
     });
   };
 };
+
+function delayResolve(value, ms) {
+  return new Promise((resolve, reject) => setTimeout(() => resolve(value), ms));
+}
 
 function delayReject(error, ms) {
   return new Promise((resolve, reject) => setTimeout(() => reject(error), ms));
